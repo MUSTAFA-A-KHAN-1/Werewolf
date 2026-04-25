@@ -2170,6 +2170,9 @@
   <string key="BurningOverkillA">
 	<value>Arsonist and Serial Killer in same game are now {0}.</value>
   </string>
+  <string key="AboutAurora">
+	<value>Aurora 🌌 can remain invisible; no one knows her role. She helps the villagers, and when she touches a wolf, it dies immediately. However, if she touches a good player, she sacrifices herself to let them live.</value>
+  </string>
   <string key="AboutArsonist">
 	<value>You are the arsonist. Like the serial killer, you are alone on your team. Every night, you may douse one targets house with kerosene. Once one or more houses are doused, you may choose to spark instead, burning all doused houses and killing everyone that is inside, including potential visitors. You win if you're the only one left.</value>
   </string>
