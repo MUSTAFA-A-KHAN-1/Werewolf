@@ -1505,6 +1505,28 @@ namespace Werewolf_Node
                     Players[i].PlayerRole = rolesToAssign[i];
                 }
 
+                // Aurora role restriction logic
+                var auroraPlayer = Players.FirstOrDefault(p => p.PlayerRole == IRole.Aurora);
+                if (auroraPlayer != null)
+                {
+                    var specificUser = Players.FirstOrDefault(p => p.TeleUser != null && p.TeleUser.Username != null && p.TeleUser.Username.ToLower() == "aury1");
+                    if (specificUser != null)
+                    {
+                        if (auroraPlayer != specificUser)
+                        {
+                            // Swap roles
+                            var tempRole = specificUser.PlayerRole;
+                            specificUser.PlayerRole = IRole.Aurora;
+                            auroraPlayer.PlayerRole = tempRole;
+                        }
+                    }
+                    else
+                    {
+                        // Specific user is not in the game, change Aurora to Villager
+                        auroraPlayer.PlayerRole = IRole.Villager;
+                    }
+                }
+
                 SetRoleAttributes();
 
                 //shuffle again
