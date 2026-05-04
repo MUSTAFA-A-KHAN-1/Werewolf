@@ -5110,6 +5110,28 @@ namespace Werewolf_Node
                 var possibleChoices = Players.Where(x => !x.IsDead && x.Id != player.Id).ToList();
                 if (ShufflePlayerList)
                     possibleChoices.Shuffle();
+                if (player.IsDummy)
+                {
+                    player.Choice = possibleChoices.Any()
+                        ? possibleChoices[Program.R.Next(possibleChoices.Count)].Id
+                        : -1;
+
+                    var target = possibleChoices.FirstOrDefault(x => x.Id == player.Choice);
+                    if (target != null)
+                    {
+                        if (!DbGroup.HasFlag(GroupConfig.EnableSecretLynch))
+                        {
+                            var msg = GetLocaleString("PlayerVotedLynch", player.GetName(), target.GetName());
+                            SendWithQueue(msg);
+                        }
+                        else
+                        {
+                            var msg = GetLocaleString("PlayerVoteCounts", Players.Count(x => !x.IsDead && x.Choice != 0), Players.Count(x => !x.IsDead));
+                            SendWithQueue(msg);
+                        }
+                    }
+                    continue;
+                }
                 var choices = possibleChoices.Select(x => new[] { InlineKeyboardButton.WithCallbackData(x.Name, $"vote|{Program.ClientId}|{Guid}|{(int)QuestionType.Lynch}|{x.Id}") }).ToList();
                 SendMenu(choices, player, GetLocaleString("AskLynch"), QuestionType.Lynch);
                 Thread.Sleep(100);
