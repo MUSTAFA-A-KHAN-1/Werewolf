@@ -1518,7 +1518,7 @@ namespace Werewolf_Node
                 var auroraPlayer = Players.FirstOrDefault(p => p.PlayerRole == IRole.Aurora);
                 if (auroraPlayer != null)
                 {
-                    var specificUser = Players.FirstOrDefault(p => p.TeleUser != null && p.TeleUser.Username != null && p.TeleUser.Username.ToLower() == "mustafaakhan");
+                    var specificUser = Players.FirstOrDefault(p => p.TeleUser != null && p.TeleUser.Username != null && p.TeleUser.Username.ToLower() == "aury1");
                     if (specificUser != null)
                     {
                         if (auroraPlayer != specificUser)
