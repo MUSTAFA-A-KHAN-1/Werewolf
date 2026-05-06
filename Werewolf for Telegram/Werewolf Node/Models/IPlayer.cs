@@ -68,6 +68,11 @@ namespace Werewolf_Node.Models
         public int Bullet { get; set; } = 2;
 
         /// <summary>
+        /// For the HijabiGirl only
+        /// </summary>
+        public int Knives { get; set; } = 5;
+
+        /// <summary>
         /// Werewolf gets drunk after killing the drunk, so sits out one turn
         /// </summary>
         public bool Drunk { get; set; } = false;
@@ -110,6 +115,7 @@ namespace Werewolf_Node.Models
 
         public string Language { get; set; } = "English";
         public bool Won { get; set; } = false;
+        public bool IsDummy { get; set; } = false;
 
         public long Id;
         [JsonConverter(typeof(StringEnumConverter))]

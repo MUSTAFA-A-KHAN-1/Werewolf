@@ -110,6 +110,9 @@ namespace Werewolf_Control.Models
         Chemistry,
         Freeze,
         Douse,
-        VisitImam
+        VisitImam,
+        ThrowKnife,
+        AuroraTouch,
+        AuroraRevive
     }
 }

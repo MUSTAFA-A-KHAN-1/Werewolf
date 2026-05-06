@@ -154,7 +154,10 @@ namespace Werewolf_Node.Models
         Chemistry,
         Freeze,
         Douse,
-        VisitImam
+        VisitImam,
+        ThrowKnife,
+        AuroraTouch,
+        AuroraRevive
     }
 
 

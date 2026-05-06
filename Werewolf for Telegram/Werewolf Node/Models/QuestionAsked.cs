@@ -33,6 +33,9 @@
         Chemistry,
         Freeze,
         Douse,
-        VisitImam
+        VisitImam,
+        ThrowKnife,
+        AuroraTouch,
+        AuroraRevive
     }
 }

@@ -141,6 +141,12 @@ namespace Shared
 
         [Role("🎃", false)]
         Spumpkin = 8796093022208,
+
+        [Role("🧕")]
+        HijabiGirl = 17592186044416,
+
+        [Role("🌌")]
+        Aurora = 35184372088832,
     }
 
     public class RoleAttribute : Attribute

@@ -20,7 +20,7 @@ namespace Werewolf_Control
     {
         internal static bool Running = true;
         private static bool _writingInfo = false;
-        internal static PerformanceCounter CpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+        // internal static PerformanceCounter CpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
         internal static float AvgCpuTime;
         ///private static List<float> CpuTimes = new List<float>();
         internal static List<long> MessagesReceived = new List<long>();
