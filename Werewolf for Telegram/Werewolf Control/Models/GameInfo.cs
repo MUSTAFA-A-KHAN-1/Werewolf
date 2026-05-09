@@ -69,6 +69,41 @@ namespace Werewolf_Control.Models
             return added;
         }
 
+        public int DummyCount()
+        {
+            return Users?.Count(x => x < 0) ?? 0;
+        }
+
+        public int KillDummyPlayers(int count = 0)
+        {
+            var n = Bot.Nodes.FirstOrDefault(x => x.ClientId == NodeId);
+            if (n == null) return 0;
+
+            var dummyIds = Users?.Where(x => x < 0).ToList() ?? new List<long>();
+            if (count > 0)
+                dummyIds = dummyIds.Take(count).ToList();
+
+            foreach (var id in dummyIds)
+            {
+                Users.Remove(id);
+                var json = JsonConvert.SerializeObject(new PlayerSmiteInfo { GroupId = GroupId, UserId = id });
+                n.Broadcast(json);
+            }
+
+            return dummyIds.Count;
+        }
+
+        public bool KillDummyPlayer(int dummyNumber)
+        {
+            if (dummyNumber <= 0) return false;
+
+            var id = -1000 - dummyNumber;
+            if (Users?.Contains(id) != true) return false;
+
+            SmitePlayer(id);
+            return true;
+        }
+
         public void ForceStart()
         {
             var json = JsonConvert.SerializeObject(new ForceStartInfo { GroupId = GroupId });

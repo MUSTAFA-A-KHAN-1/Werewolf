@@ -278,6 +278,78 @@ namespace Werewolf_Control
 #endif
         }
 
+        [Attributes.Command(Trigger = "dummies", DevOnly = true, InGroupOnly = true)]
+        public static void Dummies(Update u, string[] args)
+        {
+#if !DEBUG
+            var game = Bot.GetGroupNodeAndGame(u.Message.Chat.Id);
+            if (game == null)
+            {
+                Send("No game is currently running or waiting in this group.", u.Message.Chat.Id);
+                return;
+            }
+
+            if (args.Length > 1 && args[1].Equals("kill", StringComparison.OrdinalIgnoreCase))
+            {
+                KillDummies(u, args.Skip(1).ToArray());
+                return;
+            }
+
+            Send($"There are {game.DummyCount()} dummy player(s) alive in this game.", u.Message.Chat.Id);
+#else
+            Send("Dummy players are only available in DEBUG builds.", u.Message.Chat.Id);
+#endif
+        }
+
+        [Attributes.Command(Trigger = "killdummies", DevOnly = true, InGroupOnly = true)]
+        public static void KillDummies(Update u, string[] args)
+        {
+#if !DEBUG
+            var game = Bot.GetGroupNodeAndGame(u.Message.Chat.Id);
+            if (game == null)
+            {
+                Send("No game is currently running or waiting in this group.", u.Message.Chat.Id);
+                return;
+            }
+
+            var requested = 0;
+            if (args.Length > 1)
+                int.TryParse(args[1], out requested);
+
+            var count = game.KillDummyPlayers(requested);
+            Send($"Killed {count} dummy player(s).", u.Message.Chat.Id);
+#else
+            Send("Dummy players are only available in DEBUG builds.", u.Message.Chat.Id);
+#endif
+        }
+
+        [Attributes.Command(Trigger = "killdummy", DevOnly = true, InGroupOnly = true)]
+        public static void KillDummy(Update u, string[] args)
+        {
+#if !DEBUG
+            var game = Bot.GetGroupNodeAndGame(u.Message.Chat.Id);
+            if (game == null)
+            {
+                Send("No game is currently running or waiting in this group.", u.Message.Chat.Id);
+                return;
+            }
+
+            int dummyNumber;
+            if (args.Length <= 1 || !int.TryParse(args[1], out dummyNumber) || dummyNumber <= 0)
+            {
+                Send("Use /killdummy <number>, for example /killdummy 2.", u.Message.Chat.Id);
+                return;
+            }
+
+            if (game.KillDummyPlayer(dummyNumber))
+                Send($"Killed dummy {dummyNumber}.", u.Message.Chat.Id);
+            else
+                Send($"Dummy {dummyNumber} is not alive in this game.", u.Message.Chat.Id);
+#else
+            Send("Dummy players are only available in DEBUG builds.", u.Message.Chat.Id);
+#endif
+        }
+
         [Attributes.Command(Trigger = "stopnode", GlobalAdminOnly = true)]
         public static void StopNode(Update u, string[] args)
         {
