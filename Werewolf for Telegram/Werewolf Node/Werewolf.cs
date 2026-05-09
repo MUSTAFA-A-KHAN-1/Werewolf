@@ -5195,6 +5195,61 @@ namespace Werewolf_Node
             }
         }
 
+        private bool ShouldDummyUseBadRoleAction(IPlayer player, QuestionType qtype)
+        {
+            if (player == null) return false;
+
+            return
+                (WolfRoles.Contains(player.PlayerRole) && (qtype == QuestionType.Kill || qtype == QuestionType.Kill2)) ||
+                (player.PlayerRole == IRole.SerialKiller && qtype == QuestionType.SerialKill) ||
+                (player.PlayerRole == IRole.Zombie && qtype == QuestionType.Convert) ||
+                (player.PlayerRole == IRole.SnowWolf && qtype == QuestionType.Freeze) ||
+                (player.PlayerRole == IRole.Arsonist && qtype == QuestionType.Douse);
+        }
+
+        private void ChooseDummyNightAction(IPlayer player, List<IPlayer> targets, QuestionType qtype)
+        {
+            try
+            {
+                player.CurrentQuestion = null;
+                if (!ShouldDummyUseBadRoleAction(player, qtype))
+                    return;
+
+                if (player.PlayerRole == IRole.Arsonist && Players.Any(x => !x.IsDead && x.Doused))
+                {
+                    player.Choice = -2;
+                    return;
+                }
+
+                if (targets == null || !targets.Any())
+                {
+                    if (qtype == QuestionType.Kill2)
+                        player.Choice2 = -1;
+                    else
+                        player.Choice = -1;
+                    return;
+                }
+
+                var target = targets[Program.R.Next(targets.Count)];
+                if (qtype == QuestionType.Kill2)
+                    player.Choice2 = target.Id;
+                else
+                    player.Choice = target.Id;
+
+                if (qtype == QuestionType.Kill && WolfCubKilled && WolfRoles.Contains(player.PlayerRole))
+                {
+                    var secondTargets = targets.Where(x => x.Id != player.Choice).ToList();
+                    player.Choice2 = secondTargets.Any()
+                        ? secondTargets[Program.R.Next(secondTargets.Count)].Id
+                        : -1;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error choosing dummy night action: {e.Message} {player.TeleUser.Username} {player.Name}");
+            }
+        }
+
         private void SendDayActions()
         {
             if (Players == null) return;
@@ -5529,6 +5584,12 @@ namespace Werewolf_Node
 
                 if (ShufflePlayerList)
                     targets.Shuffle();
+
+                if (player.IsDummy)
+                {
+                    ChooseDummyNightAction(player, targets, qtype);
+                    continue;
+                }
 
                 var buttons = targets.Select(x => new[] { InlineKeyboardButton.WithCallbackData(x.Name, $"vote|{Program.ClientId}|{Guid}|{(int)qtype}|{x.Id}") }).ToList();
                 if (player.PlayerRole == IRole.Arsonist && Players.Any(x => !x.IsDead && x.Doused))
