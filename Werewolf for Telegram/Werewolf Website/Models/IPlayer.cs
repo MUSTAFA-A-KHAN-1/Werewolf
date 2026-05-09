@@ -157,7 +157,9 @@ namespace Werewolf_Node.Models
         VisitImam,
         ThrowKnife,
         AuroraTouch,
-        AuroraRevive
+        AuroraRevive,
+        BloodReaperKill,
+        BloodReaperMassacre
     }
 
 
@@ -171,13 +173,13 @@ namespace Werewolf_Node.Models
         //halloween role
         Spumpkin,
         //and once again, new roles! :D
-        Troublemaker, Chemist, SnowWolf
+        Troublemaker, Chemist, SnowWolf, BloodReaper
     }
 
     public enum ITeam
     {
         Village, Cult, Wolf, Tanner,
-        Neutral, SerialKiller, Lovers,
+        Neutral, SerialKiller, Lovers, BloodReaper,
         SKHunter,
         NoOne
     }

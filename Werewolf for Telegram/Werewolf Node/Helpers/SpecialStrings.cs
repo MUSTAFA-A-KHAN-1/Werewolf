@@ -28,6 +28,15 @@ namespace Werewolf_Node.Helpers
             { "AuroraTouchedGood", "Aurora 🌌 touched someone who was not a bad guy, and died! {0}" },
             { "AskAuroraRevive", "You have died! Who do you want to bring back to life? You have 30 seconds to choose!" },
             { "AuroraRevivedPlayer", "The power of Aurora 🌌 has revived {1}! They are back in the game!" },
+            { "RoleInfoBloodReaper", "You are the Blood Reaper 🩸. A sadistic monster driven by fear and slaughter. Each night, you may choose a player to butcher. Anyone connected to your victim becomes traumatized by the carnage, causing paranoia and mistakes throughout the village. After 3 successful kills, you unlock Massacre Night, allowing you to kill two players at once. Your goal is to drown the village in terror until nobody remains." },
+            { "BloodReaper", "the Blood Reaper 🩸" },
+            { "AskBloodReaper", "Who do you want to butcher tonight?" },
+            { "BloodReaperKill", "The villagers wake to screams and the smell of blood. {0}'s body has been torn apart in a horrifying massacre, blood covering the walls and streets. {1}" },
+            { "BloodReaperTraumatized", "The horrific scene from last night continues haunting your mind. Fear and paranoia consume your thoughts." },
+            { "BloodReaperMassacreReady", "Your bloodlust has grown beyond control. You may now slaughter two victims during Massacre Night." },
+            { "AskBloodReaperMassacre", "Massacre Night has begun. Choose two victims to execute." },
+            { "BloodReaperWins", "The village collapses into madness and terror. Bodies decorate the streets, and the survivors can no longer fight back. The Blood Reaper 🩸 has won." },
+            { "BloodReaperTeamEnd", "Blood Reaper" },
         };
     }
 }

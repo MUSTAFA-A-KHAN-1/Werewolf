@@ -36,6 +36,8 @@
         VisitImam,
         ThrowKnife,
         AuroraTouch,
-        AuroraRevive
+        AuroraRevive,
+        BloodReaperKill,
+        BloodReaperMassacre
     }
 }

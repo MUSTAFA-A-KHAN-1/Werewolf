@@ -40,7 +40,7 @@ namespace Shared
 
             var balanced = false;
             var attempts = 0;
-            var nonVgRoles = new[] { IRole.Zombie, IRole.SerialKiller, IRole.Tanner, IRole.Wolf, IRole.AlphaWolf, IRole.Sorcerer, IRole.WolfCub, IRole.Lycan, IRole.Thief, IRole.SnowWolf, IRole.Arsonist };
+            var nonVgRoles = new[] { IRole.Zombie, IRole.SerialKiller, IRole.BloodReaper, IRole.Tanner, IRole.Wolf, IRole.AlphaWolf, IRole.Sorcerer, IRole.WolfCub, IRole.Lycan, IRole.Thief, IRole.SnowWolf, IRole.Arsonist };
             var revealedVgRoles = new[] { IRole.Blacksmith, IRole.Mayor, IRole.Imam, IRole.Gunner, IRole.Sandman, IRole.Troublemaker };
             
 
@@ -122,7 +122,7 @@ namespace Shared
                         balanced = false;
 
                     // unbalanced if there's more than one role that can cause 2 lynches in between a baddie act per 4 players
-                    var onlyWolfBaddies = !rolesToAssign.Any(x => new[] { IRole.Arsonist, IRole.SerialKiller, IRole.Zombie }.Contains(x));
+                    var onlyWolfBaddies = !rolesToAssign.Any(x => new[] { IRole.Arsonist, IRole.SerialKiller, IRole.BloodReaper, IRole.Zombie }.Contains(x));
                     var killStoppingRoleCount = rolesToAssign.Count(x => x == IRole.Troublemaker || x == IRole.Sandman || (onlyWolfBaddies && x == IRole.Blacksmith));
                     if (killStoppingRoleCount * 4 > rolesToAssign.Count)
                         balanced = false;
@@ -221,7 +221,7 @@ namespace Shared
         public static int GetStrength(this IRole role, List<IRole> allRoles)
         {
             IRole[] WolfRoles = { IRole.Wolf, IRole.WolfCub, IRole.AlphaWolf, IRole.Lycan };
-            IRole[] nonConvertibleRoles = { IRole.Seer, IRole.GuardianAngel, IRole.Detective, IRole.Cursed, IRole.Harlot, IRole.Hunter, IRole.Doppelgänger, IRole.Wolf, IRole.AlphaWolf, IRole.WolfCub, IRole.SerialKiller, IRole.Lycan, IRole.Thief, IRole.SnowWolf };
+            IRole[] nonConvertibleRoles = { IRole.Seer, IRole.GuardianAngel, IRole.Detective, IRole.Cursed, IRole.Harlot, IRole.Hunter, IRole.Doppelgänger, IRole.Wolf, IRole.AlphaWolf, IRole.WolfCub, IRole.SerialKiller, IRole.BloodReaper, IRole.Lycan, IRole.Thief, IRole.SnowWolf };
             switch (role)
             {
                 case IRole.Villager:
@@ -268,6 +268,8 @@ namespace Shared
                     return 6;
                 case IRole.SerialKiller:
                     return 15;
+                case IRole.BloodReaper:
+                    return 5;
                 case IRole.Sorcerer:
                     return 2;
                 case IRole.AlphaWolf:

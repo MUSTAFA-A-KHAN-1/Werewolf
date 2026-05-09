@@ -162,6 +162,9 @@ namespace Werewolf_Node.Models
         public bool HasSeenImpossible { get; set; } = false;
         public bool InMiddleOfTrouble { get; set; } = false;
         public bool JustPromotedFromTraitor { get; set; } = false;
+        public int BloodReaperKills { get; set; } = 0;
+        public bool BloodReaperMassacreReadyNotified { get; set; } = false;
+        public bool Traumatized { get; set; } = false;
 
         public int DonationLevel { get; set; } = 0;
         public bool Founder { get; set; } = false;
@@ -176,7 +179,7 @@ namespace Werewolf_Node.Models
     public enum ITeam
     {
         Village, Cult, Wolf, Tanner,
-        Neutral, SerialKiller, Lovers, Arsonist,
+        Neutral, SerialKiller, Lovers, Arsonist, BloodReaper,
         SKHunter,
         NoOne, Thief
     }

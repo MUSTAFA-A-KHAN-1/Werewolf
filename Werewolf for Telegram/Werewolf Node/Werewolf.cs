@@ -987,7 +987,8 @@ namespace Werewolf_Node
 
                 if (choice == "-1")
                 {
-                    if (qtype == QuestionType.Kill2 && player.CurrentQuestion.QType == QuestionType.Kill2)
+                    if ((qtype == QuestionType.Kill2 && player.CurrentQuestion.QType == QuestionType.Kill2) ||
+                        (qtype == QuestionType.BloodReaperMassacre && player.CurrentQuestion.QType == QuestionType.BloodReaperMassacre))
                         player.Choice2 = -1;
                     else if (qtype == player.CurrentQuestion.QType)
                         player.Choice = -1;
@@ -999,7 +1000,8 @@ namespace Werewolf_Node
                 }
 
 
-                if (qtype == QuestionType.Kill2 && player.CurrentQuestion.QType == QuestionType.Kill2)
+                if ((qtype == QuestionType.Kill2 && player.CurrentQuestion.QType == QuestionType.Kill2) ||
+                    (qtype == QuestionType.BloodReaperMassacre && player.CurrentQuestion.QType == QuestionType.BloodReaperMassacre))
                     player.Choice2 = long.Parse(choice);
                 else if (qtype == player.CurrentQuestion.QType)
                     player.Choice = long.Parse(choice);
@@ -1029,7 +1031,7 @@ namespace Werewolf_Node
                     return;
                 }
 
-                var target = Players.FirstOrDefault(x => player.CurrentQuestion.QType == QuestionType.Kill2 ? x.Id == player.Choice2 : x.Id == player.Choice);
+                var target = Players.FirstOrDefault(x => player.CurrentQuestion.QType == QuestionType.Kill2 || player.CurrentQuestion.QType == QuestionType.BloodReaperMassacre ? x.Id == player.Choice2 : x.Id == player.Choice);
                 if (target == null)
                 {
                     Send(GetLocaleString("NoPlayerName"), query.From.Id);
@@ -1062,6 +1064,20 @@ namespace Werewolf_Node
                         var buttons = targets.Select(x => new[] { InlineKeyboardButton.WithCallbackData(x.Name, $"vote|{Program.ClientId}|{Guid}|{(int)newqtype}|{x.Id}") }).ToList();
                         buttons.Add(new[] { InlineKeyboardButton.WithCallbackData(GetLocaleString("Skip"), $"vote|{Program.ClientId}|{Guid}|{(int)newqtype}|-1") });
                         SendMenu(buttons, player, msg, newqtype);
+                        clearCurrent = false;
+                    }
+                }
+                if (qtype == QuestionType.BloodReaperKill && player.PlayerRole == IRole.BloodReaper && player.BloodReaperKills >= 3 && player.CurrentQuestion.QType == QuestionType.BloodReaperKill)
+                {
+                    var targets = Players.Where(x => !x.IsDead && x.Id != player.Id && x.Id != player.Choice).ToList();
+                    if (targets.Any())
+                    {
+                        if (ShufflePlayerList)
+                            targets.Shuffle();
+                        var newqtype = QuestionType.BloodReaperMassacre;
+                        var buttons = targets.Select(x => new[] { InlineKeyboardButton.WithCallbackData(x.Name, $"vote|{Program.ClientId}|{Guid}|{(int)newqtype}|{x.Id}") }).ToList();
+                        buttons.Add(new[] { InlineKeyboardButton.WithCallbackData(GetLocaleString("Skip"), $"vote|{Program.ClientId}|{Guid}|{(int)newqtype}|-1") });
+                        SendMenu(buttons, player, GetLocaleString("AskBloodReaperMassacre"), newqtype);
                         clearCurrent = false;
                     }
                 }
@@ -1515,10 +1531,10 @@ namespace Werewolf_Node
                 }
 
                 // Aurora role restriction logic
-                var auroraPlayer = Players.FirstOrDefault(p => p.PlayerRole == IRole.Aurora);
+                var auroraPlayer = Players.FirstOrDefault(p => p.PlayerRole == IRole.BloodReaper);
                 if (auroraPlayer != null)
                 {
-                    var specificUser = Players.FirstOrDefault(p => p.TeleUser != null && p.TeleUser.Username != null && p.TeleUser.Username.ToLower() == "aury1");
+                    var specificUser = Players.FirstOrDefault(p => p.TeleUser != null && p.TeleUser.Username != null && p.TeleUser.Username.ToLower() == "mustafaakhan");
                     if (specificUser != null)
                     {
                         if (auroraPlayer != specificUser)
@@ -1633,6 +1649,9 @@ namespace Werewolf_Node
                     break;
                 case IRole.SerialKiller:
                     p.Team = ITeam.SerialKiller;
+                    break;
+                case IRole.BloodReaper:
+                    p.Team = ITeam.BloodReaper;
                     break;
                 case IRole.Arsonist:
                     p.Team = ITeam.Arsonist;
@@ -2366,17 +2385,17 @@ namespace Werewolf_Node
             visited.BeingVisitedSameNightCount++;
             // If someone's dead, they're dead.
             if (visited.IsDead && !visited.Burning && (ThiefFull || visitor.PlayerRole != IRole.Thief)) return VisitResult.AlreadyDead;
-            // A serial killer never misses their target. They might stumble into a grave, though.
-            if (visitor.PlayerRole == IRole.SerialKiller && visited.PlayerRole != IRole.GraveDigger) return visited.IsDead ? VisitResult.AlreadyDead : VisitResult.Success;
-            // if the visited person is burning, everyone but the SK burns with them
+            // Serial-style killers never miss their target. They might stumble into a grave, though.
+            if ((visitor.PlayerRole == IRole.SerialKiller || visitor.PlayerRole == IRole.BloodReaper) && visited.PlayerRole != IRole.GraveDigger) return visited.IsDead ? VisitResult.AlreadyDead : VisitResult.Success;
+            // if the visited person is burning, everyone but the SK/Reaper burns with them
             if (visited.Burning)
             {
-                if (visitor.PlayerRole == IRole.SerialKiller) return VisitResult.AlreadyDead;
+                if (visitor.PlayerRole == IRole.SerialKiller || visitor.PlayerRole == IRole.BloodReaper) return VisitResult.AlreadyDead;
                 KillPlayer(visitor, KillMthd.VisitBurning, killer: Players.GetPlayerForRole(IRole.Arsonist, false), diedByVisitingVictim: true);
                 return VisitResult.VisitorDied;
             }
-            // if the visited person is a serial killer, say goodbye to your lives, unless you are a wolf and very lucky
-            if (visited.PlayerRole == IRole.SerialKiller)
+            // if the visited person is a serial killer or Blood Reaper, say goodbye to your lives, unless you are a wolf and very lucky
+            if (visited.PlayerRole == IRole.SerialKiller || visited.PlayerRole == IRole.BloodReaper)
             {
                 if ((!WolfRoles.Contains(visitor.PlayerRole) && visitor.PlayerRole != IRole.SnowWolf) || visited.Choice == 0 || visited.Choice == -1 || visited.Frozen || Program.R.Next(100) < 80)
                 {
@@ -2417,7 +2436,7 @@ namespace Werewolf_Node
             if (visited.PlayerRole == IRole.GraveDigger)
             {
                 if (visited.DugGravesLastNight < 1) return VisitResult.Success;
-                if (visitor.PlayerRole == IRole.SerialKiller)
+                if (visitor.PlayerRole == IRole.SerialKiller || visitor.PlayerRole == IRole.BloodReaper)
                 {
                     visitor.StumbledGrave = GameDay;
                     Send(GetLocaleString("KillerStumbled", visited.GetName()), visitor.Id);
@@ -2475,6 +2494,64 @@ namespace Werewolf_Node
             Fail,
             AlreadyDead,
             TargetNull
+        }
+
+        private IEnumerable<IPlayer> GetBloodReaperConnectedPlayers(IPlayer victim)
+        {
+            if (victim == null) return Enumerable.Empty<IPlayer>();
+
+            var connected = new List<IPlayer>();
+            if (victim.InLove)
+            {
+                var lover = Players.FirstOrDefault(x => x.Id == victim.LoverId && !x.IsDead);
+                if (lover != null) connected.Add(lover);
+            }
+
+            if (victim.PlayerRole == IRole.Mason)
+                connected.AddRange(Players.Where(x => x.PlayerRole == IRole.Mason && !x.IsDead && x.Id != victim.Id));
+            else if (victim.PlayerRole == IRole.Zombie)
+                connected.AddRange(Players.Where(x => x.PlayerRole == IRole.Zombie && !x.IsDead && x.Id != victim.Id));
+            else if (WolfRoles.Contains(victim.PlayerRole) || victim.PlayerRole == IRole.SnowWolf)
+                connected.AddRange(Players.Where(x => !x.IsDead && x.Id != victim.Id && (WolfRoles.Contains(x.PlayerRole) || x.PlayerRole == IRole.SnowWolf)));
+
+            return connected.Where(x => x.PlayerRole != IRole.BloodReaper).GroupBy(x => x.Id).Select(x => x.First());
+        }
+
+        private void TraumatizeConnectedPlayers(IPlayer victim)
+        {
+            foreach (var connected in GetBloodReaperConnectedPlayers(victim))
+            {
+                connected.Traumatized = true;
+                Send(GetLocaleString("BloodReaperTraumatized"), connected.Id);
+            }
+        }
+
+        private bool BloodReaperKill(IPlayer reaper, IPlayer victim, IPlayer ga)
+        {
+            if (reaper == null || victim == null || reaper.IsDead || victim.IsDead) return false;
+
+            switch (VisitPlayer(reaper, victim))
+            {
+                case VisitResult.Success:
+                    if (ga?.Choice == victim.Id && victim.PlayerRole != IRole.Harlot)
+                    {
+                        Send(GetLocaleString("GuardBlockedKiller", victim.GetName()), reaper.Id);
+                        victim.WasSavedLastNight = true;
+                        return false;
+                    }
+
+                    KillPlayer(victim, KillMthd.SerialKilled, killer: reaper, killedByRole: IRole.BloodReaper);
+                    TraumatizeConnectedPlayers(victim);
+                    reaper.BloodReaperKills++;
+                    if (reaper.BloodReaperKills >= 3 && !reaper.BloodReaperMassacreReadyNotified)
+                    {
+                        reaper.BloodReaperMassacreReadyNotified = true;
+                        Send(GetLocaleString("BloodReaperMassacreReady"), reaper.Id);
+                    }
+                    return true;
+            }
+
+            return false;
         }
 
         private void StealRole(IPlayer thief, IPlayer target)
@@ -2916,7 +2993,7 @@ namespace Werewolf_Node
                     //kill them
                     gunner.Bullet--;
                     gunner.HasUsedAbility = true;
-                    if (new[] { IRole.Wolf, IRole.AlphaWolf, IRole.WolfCub, IRole.Zombie, IRole.SerialKiller, IRole.Lycan, IRole.SnowWolf, IRole.Arsonist }.Contains(check.PlayerRole))
+                    if (new[] { IRole.Wolf, IRole.AlphaWolf, IRole.WolfCub, IRole.Zombie, IRole.SerialKiller, IRole.BloodReaper, IRole.Lycan, IRole.SnowWolf, IRole.Arsonist }.Contains(check.PlayerRole))
                         gunner.BulletHitBaddies++;
                     //update database
                     switch (check.PlayerRole)
@@ -2947,7 +3024,7 @@ namespace Werewolf_Node
                     //throw knife
                     hijabiGirl.Knives--;
                     hijabiGirl.HasUsedAbility = true;
-                    bool isEnemy = new[] { IRole.Wolf, IRole.AlphaWolf, IRole.WolfCub, IRole.Zombie, IRole.SerialKiller, IRole.Lycan, IRole.SnowWolf, IRole.Arsonist, IRole.Sorcerer, IRole.Traitor, IRole.Thief }.Contains(check.PlayerRole);
+                    bool isEnemy = new[] { IRole.Wolf, IRole.AlphaWolf, IRole.WolfCub, IRole.Zombie, IRole.SerialKiller, IRole.BloodReaper, IRole.Lycan, IRole.SnowWolf, IRole.Arsonist, IRole.Sorcerer, IRole.Traitor, IRole.Thief }.Contains(check.PlayerRole);
 
                     if (isEnemy)
                     {
@@ -3029,7 +3106,7 @@ namespace Werewolf_Node
                     Send(GetLocaleString("DetectiveSnoop", check.GetName(), GetDescription(fakeRole)), detect.Id);
 
                     //if snooped non-bad-roles:
-                    if (!new[] { IRole.Wolf, IRole.AlphaWolf, IRole.WolfCub, IRole.Lycan, IRole.Zombie, IRole.SerialKiller, IRole.SnowWolf, IRole.Arsonist }.Contains(check.PlayerRole))
+                    if (!new[] { IRole.Wolf, IRole.AlphaWolf, IRole.WolfCub, IRole.Lycan, IRole.Zombie, IRole.SerialKiller, IRole.BloodReaper, IRole.SnowWolf, IRole.Arsonist }.Contains(check.PlayerRole))
                         detect.CorrectSnooped.Clear();     //clear correct snoop list
                     else
                     {
@@ -3629,6 +3706,29 @@ namespace Werewolf_Node
             }
 
             #endregion
+
+            #region Blood Reaper Night
+
+            var bloodReaper = Players.FirstOrDefault(x => x.PlayerRole == IRole.BloodReaper & !x.IsDead);
+            if (bloodReaper != null && !bloodReaper.Frozen)
+            {
+                var massacreActive = bloodReaper.BloodReaperKills >= 3;
+                var reaperVictims = new List<IPlayer>();
+                var firstVictim = Players.FirstOrDefault(x => x.Id == bloodReaper.Choice);
+                if (firstVictim != null)
+                    reaperVictims.Add(firstVictim);
+                if (massacreActive && bloodReaper.Choice2 != 0 && bloodReaper.Choice2 != -1 && bloodReaper.Choice2 != bloodReaper.Choice)
+                {
+                    var secondVictim = Players.FirstOrDefault(x => x.Id == bloodReaper.Choice2);
+                    if (secondVictim != null)
+                        reaperVictims.Add(secondVictim);
+                }
+
+                foreach (var victim in reaperVictims)
+                    BloodReaperKill(bloodReaper, victim, ga);
+            }
+
+            #endregion
             #region Imam Night
 
             var imam = Players.FirstOrDefault(x => x.PlayerRole == IRole.Imam && !x.IsDead);
@@ -3873,6 +3973,7 @@ namespace Werewolf_Node
                             switch (target.PlayerRole)
                             {
                                 case IRole.SerialKiller:
+                                case IRole.BloodReaper:
                                     foreach (var c in voteCult) Send(GetLocaleString("CultConvertSerialKiller", newbie.GetName(), target.GetName()), c.Id);
                                     break;
                                 case IRole.GraveDigger:
@@ -3897,7 +3998,7 @@ namespace Werewolf_Node
                 switch (VisitPlayer(aurora, target))
                 {
                     case VisitResult.Success:
-                        var nonVgRoles = new[] { IRole.Zombie, IRole.SerialKiller, IRole.Tanner, IRole.Wolf, IRole.AlphaWolf, IRole.Sorcerer, IRole.WolfCub, IRole.Lycan, IRole.Thief, IRole.SnowWolf, IRole.Arsonist, IRole.Doppelgänger, IRole.Traitor };
+                        var nonVgRoles = new[] { IRole.Zombie, IRole.SerialKiller, IRole.BloodReaper, IRole.Tanner, IRole.Wolf, IRole.AlphaWolf, IRole.Sorcerer, IRole.WolfCub, IRole.Lycan, IRole.Thief, IRole.SnowWolf, IRole.Arsonist, IRole.Doppelgänger, IRole.Traitor };
                         if (nonVgRoles.Contains(target.PlayerRole))
                         {
                             KillPlayer(target, KillMthd.VisitWolf, killer: aurora, killedByRole: IRole.Aurora);
@@ -4020,7 +4121,7 @@ namespace Werewolf_Node
                             }
                         break;
                     case VisitResult.AlreadyDead:
-                        if (target.DiedLastNight && (WolfRoles.Contains(target.KilledByRole) || target.KilledByRole == IRole.SerialKiller) && !target.DiedByVisitingKiller && !target.DiedByVisitingVictim)
+                        if (target.DiedLastNight && (WolfRoles.Contains(target.KilledByRole) || target.KilledByRole == IRole.SerialKiller || target.KilledByRole == IRole.BloodReaper) && !target.DiedByVisitingKiller && !target.DiedByVisitingVictim)
                         {
                             KillPlayer(harlot, KillMthd.VisitVictim, killer: target, diedByVisitingVictim: true, killedByRole: target.KilledByRole);
                             harlot.RoleModel = target.Id; //store who they visited
@@ -4249,6 +4350,7 @@ namespace Werewolf_Node
                                 Send(GetLocaleString("GuardWolf"), ga.Id);
                                 break;
                             case IRole.SerialKiller:
+                            case IRole.BloodReaper:
                                 Send(GetLocaleString("GuardKiller"), ga.Id);
                                 break;
                             case IRole.GraveDigger:
@@ -4310,7 +4412,7 @@ namespace Werewolf_Node
                             break;
                         case VisitResult.VisitorDied:
                             if (!target.Burning && target.PlayerRole == IRole.GraveDigger) Send(GetLocaleString("ThiefFell", target.GetName()), thief.Id);
-                            else if (target.PlayerRole == IRole.SerialKiller) Send(GetLocaleString("StealKiller"), thief.Id);
+                            else if (target.PlayerRole == IRole.SerialKiller || target.PlayerRole == IRole.BloodReaper) Send(GetLocaleString("StealKiller"), thief.Id);
                             break;
                         case VisitResult.Fail:
                         fail:
@@ -4402,6 +4504,10 @@ namespace Werewolf_Node
                                     break;
                             }
                         }
+                        else if (p.KilledByRole == IRole.BloodReaper && !p.DiedByVisitingKiller && !p.DiedByVisitingVictim)
+                        {
+                            msg = GetLocaleString("BloodReaperKill", p.GetName(), $"{p.GetName()} {GetLocaleString("Was")} {GetDescription(p.PlayerRole)}");
+                        }
                         else if (p.KilledByRole == IRole.Chemist) //killed by chemist
                         {
                             if (p.ChemistFailed) // player is chemist and accidentally suicided
@@ -4460,7 +4566,11 @@ namespace Werewolf_Node
                         //died by visiting
                         else
                         {
-                            switch (p.PlayerRole)
+                            if (p.KilledByRole == IRole.BloodReaper)
+                            {
+                                msg = GetLocaleString("BloodReaperKill", p.GetName(), $"{p.GetName()} {GetLocaleString("Was")} {GetDescription(p.PlayerRole)}");
+                            }
+                            else switch (p.PlayerRole)
                             {
                                 case IRole.WolfCub:
                                 case IRole.AlphaWolf:
@@ -4547,7 +4657,7 @@ namespace Werewolf_Node
 
                         foreach (var pl in Players)
                         {
-                            if ((WolfRoles.Contains(pl.PlayerRole) || pl.PlayerRole == IRole.SerialKiller) && pl.KilledLastNight >= 3)
+                            if ((WolfRoles.Contains(pl.PlayerRole) || pl.PlayerRole == IRole.SerialKiller || pl.PlayerRole == IRole.BloodReaper) && pl.KilledLastNight >= 3)
                                 AddAchievement(pl, AchievementsReworked.TripleKill);
                         }
                     }
@@ -4673,7 +4783,7 @@ namespace Werewolf_Node
                     //check for Tanner + Sorcerer + Thief + Doppelgänger
                     if (alivePlayers.Select(x => x.PlayerRole).All(x => new IRole[] { IRole.Sorcerer, IRole.Tanner, IRole.Thief, IRole.Doppelgänger }.Contains(x)))
                         return DoGameEnd(ITeam.NoOne);
-                    //check for Hunter + SK / Wolf
+                    //check for Hunter + SK / Blood Reaper / Wolf
                     if (alivePlayers.Any(x => x.PlayerRole == IRole.Hunter))
                     {
                         var other = alivePlayers.FirstOrDefault(x => x.PlayerRole != IRole.Hunter);
@@ -4681,6 +4791,8 @@ namespace Werewolf_Node
                             return DoGameEnd(ITeam.Village);
                         if (other.PlayerRole == IRole.SerialKiller)
                             return DoGameEnd(ITeam.SKHunter);
+                        if (other.PlayerRole == IRole.BloodReaper)
+                            return DoGameEnd(ITeam.BloodReaper);
                         if (WolfRoles.Contains(other.PlayerRole) || other.PlayerRole == IRole.SnowWolf)
                         {
                             var hunter = alivePlayers.First(x => x.PlayerRole == IRole.Hunter);
@@ -4701,6 +4813,9 @@ namespace Werewolf_Node
                     //check for SK
                     if (alivePlayers.Any(x => x.PlayerRole == IRole.SerialKiller))
                         return DoGameEnd(ITeam.SerialKiller);
+                    //check for Blood Reaper
+                    if (alivePlayers.Any(x => x.PlayerRole == IRole.BloodReaper))
+                        return DoGameEnd(ITeam.BloodReaper);
                     //check for Arso
                     if (alivePlayers.Any(x => x.PlayerRole == IRole.Arsonist) && !alivePlayers.Any(x => (x.PlayerRole == IRole.Gunner && x.Bullet > 0) || (x.PlayerRole == IRole.HijabiGirl && x.Knives > 0)))
                         return DoGameEnd(ITeam.Arsonist);
@@ -4745,6 +4860,9 @@ namespace Werewolf_Node
             if (alivePlayers.Any(x => x.Team == ITeam.SerialKiller)) //there is still SK alive, do nothing (surely more than two players)
                 return false;
 
+            if (alivePlayers.Any(x => x.Team == ITeam.BloodReaper)) //there is still Blood Reaper alive, do nothing (surely more than two players)
+                return false;
+
             if (alivePlayers.Any(x => x.Team == ITeam.Arsonist)) //there is still Arsonist alive, do nothing (surely more than two players)
                 return false;
             //is everyone left a Zombie?
@@ -4771,8 +4889,8 @@ namespace Werewolf_Node
                 return DoGameEnd(ITeam.Wolf);
             }
 
-            if (alivePlayers.All(x => !WolfRoles.Contains(x.PlayerRole) && x.PlayerRole != IRole.SnowWolf && x.PlayerRole != IRole.Zombie && x.PlayerRole != IRole.SerialKiller && x.PlayerRole != IRole.Arsonist)) //checks for SK and snow wolf are actually useless...
-                //no wolf, no cult, no SK, no Arsonist... VG wins!
+            if (alivePlayers.All(x => !WolfRoles.Contains(x.PlayerRole) && x.PlayerRole != IRole.SnowWolf && x.PlayerRole != IRole.Zombie && x.PlayerRole != IRole.SerialKiller && x.PlayerRole != IRole.BloodReaper && x.PlayerRole != IRole.Arsonist)) //checks for SK and snow wolf are actually useless...
+                //no wolf, no cult, no SK, no Blood Reaper, no Arsonist... VG wins!
                 if (!checkbitten || alivePlayers.All(x => !x.Bitten)) //unless bitten is about to turn into a wolf
                     return DoGameEnd(ITeam.Village);
 
@@ -4811,7 +4929,7 @@ namespace Werewolf_Node
                     foreach (var w in Players.Where(x => x.Team == team))
                     {
                         //for sk and arsonist, only let the one that is alive win
-                        if ((team == ITeam.SerialKiller || team == ITeam.Arsonist) && w.IsDead)
+                        if ((team == ITeam.SerialKiller || team == ITeam.BloodReaper || team == ITeam.Arsonist) && w.IsDead)
                             continue;
 
                         //the winning tanner is the only one with DiedLastNight == true
@@ -5010,6 +5128,19 @@ namespace Werewolf_Node
                         game.Winner = "SerialKiller";
                         SendWithQueue(msg, GetRandomImage(SerialKillerWins));
                         break;
+                    case ITeam.BloodReaper:
+                        if (Players.Count(x => !x.IsDead) > 1)
+                        {
+                            var alive = Players.Where(x => !x.IsDead);
+                            var otherPerson = alive.FirstOrDefault(x => x.PlayerRole != IRole.BloodReaper);
+                            var reaper = alive.FirstOrDefault(x => x.PlayerRole == IRole.BloodReaper);
+                            if (otherPerson != null)
+                                KillPlayer(otherPerson, KillMthd.SerialKilled, killer: reaper, isNight: false, hunterFinalShot: false, killedByRole: IRole.BloodReaper);
+                        }
+                        msg += GetLocaleString("BloodReaperWins");
+                        game.Winner = "BloodReaper";
+                        SendWithQueue(msg, GetRandomImage(SerialKillerWins));
+                        break;
                     case ITeam.Lovers:
                         msg += GetLocaleString("LoversWin");
                         game.Winner = "Lovers";
@@ -5202,6 +5333,7 @@ namespace Werewolf_Node
             return
                 (WolfRoles.Contains(player.PlayerRole) && (qtype == QuestionType.Kill || qtype == QuestionType.Kill2)) ||
                 (player.PlayerRole == IRole.SerialKiller && qtype == QuestionType.SerialKill) ||
+                (player.PlayerRole == IRole.BloodReaper && (qtype == QuestionType.BloodReaperKill || qtype == QuestionType.BloodReaperMassacre)) ||
                 (player.PlayerRole == IRole.Zombie && qtype == QuestionType.Convert) ||
                 (player.PlayerRole == IRole.SnowWolf && qtype == QuestionType.Freeze) ||
                 (player.PlayerRole == IRole.Arsonist && qtype == QuestionType.Douse);
@@ -5235,6 +5367,14 @@ namespace Werewolf_Node
                     player.Choice2 = target.Id;
                 else
                     player.Choice = target.Id;
+
+                if (qtype == QuestionType.BloodReaperKill && player.BloodReaperKills >= 3)
+                {
+                    var secondTargets = targets.Where(x => x.Id != player.Choice).ToList();
+                    player.Choice2 = secondTargets.Any()
+                        ? secondTargets[Program.R.Next(secondTargets.Count)].Id
+                        : -1;
+                }
 
                 if (qtype == QuestionType.Kill && WolfCubKilled && WolfRoles.Contains(player.PlayerRole))
                 {
@@ -5412,12 +5552,25 @@ namespace Werewolf_Node
                 List<IPlayer> targets = new List<IPlayer>();
 
                 QuestionType qtype = QuestionType.Lynch;
+                if (player.Traumatized)
+                {
+                    player.Traumatized = false;
+                    player.Choice = -1;
+                    Send(GetLocaleString("BloodReaperTraumatized"), player.Id);
+                    continue;
+                }
+
                 switch (player.PlayerRole)
                 {
                     case IRole.SerialKiller:
                         targets = targetBase.ToList();
                         msg = GetLocaleString("AskKill");
                         qtype = QuestionType.SerialKill;
+                        break;
+                    case IRole.BloodReaper:
+                        targets = targetBase.ToList();
+                        msg = GetLocaleString(player.BloodReaperKills >= 3 ? "AskBloodReaperMassacre" : "AskBloodReaper");
+                        qtype = QuestionType.BloodReaperKill;
                         break;
                     case IRole.Harlot:
                         targets = targetBase.ToList();
@@ -5690,7 +5843,7 @@ namespace Werewolf_Node
         {
             CheckRoleChanges();
 
-            var nonVgRoles = new[] { IRole.Zombie, IRole.SerialKiller, IRole.Tanner, IRole.Wolf, IRole.AlphaWolf, IRole.Sorcerer, IRole.WolfCub, IRole.Lycan, IRole.Thief, IRole.SnowWolf, IRole.Arsonist, IRole.Doppelgänger, IRole.Traitor };
+            var nonVgRoles = new[] { IRole.Zombie, IRole.SerialKiller, IRole.BloodReaper, IRole.Tanner, IRole.Wolf, IRole.AlphaWolf, IRole.Sorcerer, IRole.WolfCub, IRole.Lycan, IRole.Thief, IRole.SnowWolf, IRole.Arsonist, IRole.Doppelgänger, IRole.Traitor };
             var possibleTargets = Players.Where(x => x.IsDead && !nonVgRoles.Contains(x.PlayerRole)).ToList();
             if (possibleTargets.Count == 0)
                 return;
@@ -5791,7 +5944,7 @@ namespace Werewolf_Node
                             Transform(hunter, IRole.Villager, TransformationMethod.KillElder);
                             AddAchievement(hunter, AchievementsReworked.DemotedByTheDeath);
                         }
-                        if (killed.PlayerRole == IRole.Wolf || killed.PlayerRole == IRole.AlphaWolf || killed.PlayerRole == IRole.WolfCub || killed.PlayerRole == IRole.SerialKiller || killed.PlayerRole == IRole.Lycan || killed.PlayerRole == IRole.SnowWolf)
+                        if (killed.PlayerRole == IRole.Wolf || killed.PlayerRole == IRole.AlphaWolf || killed.PlayerRole == IRole.WolfCub || killed.PlayerRole == IRole.SerialKiller || killed.PlayerRole == IRole.BloodReaper || killed.PlayerRole == IRole.Lycan || killed.PlayerRole == IRole.SnowWolf)
                             AddAchievement(hunter, AchievementsReworked.HeyManNiceShot);
 
                         CheckRoleChanges(); // In case the hunter shot their own doppelgänger, they should die as hunter too

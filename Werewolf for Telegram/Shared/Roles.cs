@@ -147,6 +147,9 @@ namespace Shared
 
         [Role("🌌")]
         Aurora = 35184372088832,
+
+        [Role("🩸")]
+        BloodReaper = 70368744177664,
     }
 
     public class RoleAttribute : Attribute

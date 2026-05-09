@@ -66,7 +66,7 @@ namespace Werewolf_Control.Models
     public enum ITeam
     {
         Village, Cult, Wolf, Tanner,
-        Neutral, SerialKiller, Lovers,
+        Neutral, SerialKiller, Lovers, BloodReaper,
         SKHunter,
         NoOne
     }
@@ -113,6 +113,8 @@ namespace Werewolf_Control.Models
         VisitImam,
         ThrowKnife,
         AuroraTouch,
-        AuroraRevive
+        AuroraRevive,
+        BloodReaperKill,
+        BloodReaperMassacre
     }
 }
