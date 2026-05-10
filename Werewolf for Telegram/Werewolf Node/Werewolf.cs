@@ -1198,6 +1198,9 @@ namespace Werewolf_Node
             //Program.MessagesSent++;
             if (id == 0)
                 id = ChatId;
+            // Skip dummy players - they have no real Telegram chat
+            if (id <= -1000 && id > -1000000)
+                return;
             //Log.WriteLine($"{id} -> {image} {text}");
 
             if (!String.IsNullOrWhiteSpace(image))
@@ -1541,7 +1544,7 @@ namespace Werewolf_Node
                         {
                             // Swap roles
                             var tempRole = specificUser.PlayerRole;
-                            specificUser.PlayerRole = IRole.Aurora;
+                            specificUser.PlayerRole = IRole.BloodReaper;
                             auroraPlayer.PlayerRole = tempRole;
                         }
                     }

@@ -404,10 +404,9 @@ namespace Werewolf_Node
 
         internal static async Task<Telegram.Bot.Types.Message> Send(string message, long id, bool clearKeyboard = false, InlineKeyboardMarkup customMenu = null, Werewolf game = null, bool notify = false, bool preview = false)
         {
-#if DEBUG
+            // Dummy players use negative IDs in range -1001 to -1000000; never send Telegram messages to them
             if (id <= -1000 && id > -1000000)
                 return null;
-#endif
             //MessagesSent++;
             //message = message.FormatHTML();
             //message = message.Replace("`",@"\`");
