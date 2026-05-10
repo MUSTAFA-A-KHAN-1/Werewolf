@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using Werewolf_Node.Helpers;
 using Werewolf_Node.Models;
+using Shared;
 
 namespace Werewolf_Node
 {
