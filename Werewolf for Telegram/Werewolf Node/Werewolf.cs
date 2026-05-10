@@ -20,7 +20,7 @@ using Telegram.Bot;
 
 namespace Werewolf_Node
 {
-    public class Werewolf : IDisposable
+    public partial class Werewolf : IDisposable
     {
         public long ChatId;
         public int GameDay, GameId;
@@ -2950,6 +2950,7 @@ namespace Werewolf_Node
             SendPlayerList();
 
             SendDayActions();
+            SendDummyDefenseStatements();
             //incremental sleep time for large players....
             Thread.Sleep(TimeSpan.FromSeconds((DbGroup.DayTime ?? Settings.TimeDay) + timeToAdd));
 
