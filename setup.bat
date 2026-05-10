@@ -37,7 +37,14 @@ if "%API_TOKEN%"=="" (
     exit /b
 )
 
-:: 3. Setup Docker MSSQL Container
+:: 3. Prompt for OpenAI API Token (Optional)
+echo.
+set /p OPENAI_TOKEN="Please enter your OpenAI API Token (optional, press Enter to skip): "
+if not "%OPENAI_TOKEN%"=="" (
+    echo OpenAI API Token will be configured.
+) else (
+    echo Skipping OpenAI API Token configuration.
+)
 echo.
 echo Starting MSSQL Docker container...
 docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=Werewolf@12345" -p 1433:1433 --name werewolf-sql -d mcr.microsoft.com/mssql/server:2022-latest
@@ -66,6 +73,10 @@ docker exec -i werewolf-sql /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U SA 
 echo.
 echo Setting Windows Registry Keys...
 reg add "HKLM\SOFTWARE\Werewolf" /v %API_REG_VALUE% /t REG_SZ /d "%API_TOKEN%" /f
+if not "%OPENAI_TOKEN%"=="" (
+    reg add "HKLM\SOFTWARE\Werewolf" /v OpenAIAPIKey /t REG_SZ /d "%OPENAI_TOKEN%" /f
+    echo OpenAI API Key configured.
+)
 set DB_CONN="metadata=res://*/WerewolfModel.csdl|res://*/WerewolfModel.ssdl|res://*/WerewolfModel.msl;provider=System.Data.SqlClient;provider connection string=\"data source=localhost,1433;initial catalog=werewolf;user id=SA;password=Werewolf@12345;MultipleActiveResultSets=True;App=EntityFramework;TrustServerCertificate=True\""
 reg add "HKLM\SOFTWARE\Werewolf" /v BotConnectionString /t REG_SZ /d %DB_CONN% /f
 

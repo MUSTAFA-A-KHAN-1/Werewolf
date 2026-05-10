@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Werewolf_Node.Helpers;
 using Werewolf_Node.Models;
+using Werewolf_Node.Services;
 using Shared;
 
 namespace Werewolf_Node
@@ -31,6 +33,37 @@ namespace Werewolf_Node
         private string CreateDummyAIDefenseStatement(IPlayer dummy)
         {
             if (dummy == null) return null;
+
+            try
+            {
+                var name = dummy.GetName(menu: true).FormatHTML();
+                var roleName = dummy.PlayerRole.GetName();
+                var isBadRole = WolfRoles.Contains(dummy.PlayerRole)
+                                || dummy.PlayerRole == IRole.SerialKiller
+                                || dummy.PlayerRole == IRole.Zombie
+                                || dummy.PlayerRole == IRole.Arsonist
+                                || dummy.PlayerRole == IRole.BloodReaper
+                                || dummy.PlayerRole == IRole.SnowWolf;
+
+                var suspect = Players.Where(x => !x.IsDead && x.Id != dummy.Id).OrderBy(x => Program.R.Next()).FirstOrDefault();
+                var suspectName = suspect != null ? suspect.GetName(menu: true).FormatHTML() : "someone";
+
+                // Use OpenAI service to generate statement
+                var task = Task.Run(() => OpenAIService.GenerateDummyDefenseStatement(name, roleName, isBadRole, suspectName));
+                task.Wait(); // Wait for the async operation to complete
+
+                return task.Result;
+            }
+            catch (Exception ex)
+            {
+                // Fallback to hardcoded statements if AI fails
+                Console.WriteLine($"Error generating AI defense statement: {ex.Message}");
+                return GenerateFallbackStatement(dummy);
+            }
+        }
+
+        private string GenerateFallbackStatement(IPlayer dummy)
+        {
             var name = dummy.GetName(menu: true).FormatHTML();
             var isBadRole = WolfRoles.Contains(dummy.PlayerRole)
                             || dummy.PlayerRole == IRole.SerialKiller

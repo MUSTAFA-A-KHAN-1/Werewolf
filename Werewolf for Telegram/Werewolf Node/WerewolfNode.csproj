@@ -255,6 +255,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Werewolf.cs" />
     <Compile Include="DummyDefense.cs" />
+    <Compile Include="Services\OpenAIService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
