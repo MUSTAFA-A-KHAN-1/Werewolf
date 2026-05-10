@@ -37,7 +37,7 @@ namespace Werewolf_Node
             try
             {
                 var name = dummy.GetName(menu: true).FormatHTML();
-                var roleName = dummy.PlayerRole.GetName();
+                var roleName = dummy.PlayerRole.ToString();
                 var isBadRole = WolfRoles.Contains(dummy.PlayerRole)
                                 || dummy.PlayerRole == IRole.SerialKiller
                                 || dummy.PlayerRole == IRole.Zombie
