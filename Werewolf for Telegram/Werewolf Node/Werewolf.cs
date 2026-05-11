@@ -609,7 +609,7 @@ namespace Werewolf_Node
                         //new Task(() => { ImageHelper.GetUserImage(p.TeleUser.Id); }).Start();
                     }
 
-                    GameId = db.Games.Where(x => x.GroupId == ChatId).OrderByDescending(x => x.Id).FirstOrDefault()?.Id ?? 0;
+                    GameId = game.Id; // fix: use the id of the game we just created, not a re-query that risks grabbing the wrong game
 
                     db.Database.ExecuteSqlCommand($"DELETE FROM NotifyGame WHERE GroupId = {ChatId}");
                 }
@@ -6130,18 +6130,13 @@ namespace Werewolf_Node
                         dbpVictim = GetDBPlayer(victim, db);
                         victimid = dbpVictim.Id;
                     }
-                    if (DBGameId == 0)
-                    {
-                        DBGameId = db.Games.FirstOrDefault(x => x.Id == GameId)?.Id ?? 0;
-                    }
-
                     var dbgp = dbpVictim == null ? GetDBGamePlayer(victim, db) : GetDBGamePlayer(dbpVictim);
                     dbgp.Survived = false;
                     db.SaveChanges();
                     var gk = new GameKill
                     {
                         Day = GameDay,
-                        GameId = DBGameId,
+                        GameId = GameId, // fix: use GameId directly, DBGameId was redundant and always started at 0
                         KillMethodId = (int)method,
                         KillerId = killerid,
                         TimeStamp = DateTime.Now,
@@ -6220,7 +6215,7 @@ namespace Werewolf_Node
             return dates.Any(x => x.Day == day && x.Month == month && (!year.HasValue || x.Year == year.Value));
         }
 
-        public int DBGameId { get; set; }
+        // DBGameId removed — was redundant with GameId and caused kills to be saved with GameId=0
 
         private void DBKill(IEnumerable<IPlayer> killers, IPlayer victim, KillMthd method)
         {

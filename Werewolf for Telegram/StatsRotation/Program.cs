@@ -29,43 +29,40 @@ namespace StatsRotation
                     Thread.Sleep(TimeSpan.FromHours(1));
 
 
-                    ////now groups
-                    //List<long> groupids;
-                    //using (var db = new WWContext())
-                    //{
-                    //    groupids = db.Groups.Select(x => x.GroupId).ToList();
-                    //}
-                    //var start = DateTime.Now;
-                    //foreach (var g in groupids)
-                    //{
-                    //    var index = groupids.IndexOf(g);
-                    //    Console.Clear();
-                    //    Console.WriteLine($"Working on group {groupids.IndexOf(g)} out of {groupids.Count}");
-                    //    if (index != 0)
-                    //    {
-                    //        var time = (DateTime.Now - start).Ticks;
-                    //        Console.WriteLine($"Time taken so far: {new TimeSpan(time)}");
-                    //        time /= index;
-                    //        time *= groupids.Count;
-                    //        Console.WriteLine($"Total time estimated: {new TimeSpan(time)}");
-                    //        time -= (DateTime.Now - start).Ticks;
-                    //        Console.WriteLine($"Estimated time remaining: {new TimeSpan(time)}");
-                    //    }
-                    //    //calculate time
-                    //    GroupStats(g);
-                    //    //Thread.Sleep(500);
-                    //}
-                    ////players
-                    //List<int> playerids;
-                    //using (var db = new WWContext())
-                    //{
-                    //    playerids = db.Players.Select(x => x.Id).ToList();
-                    //}
-                    //foreach (var p in playerids)
-                    //{
-                    //    PlayerStats(p);
-                    //    //Thread.Sleep(500);
-                    //}
+                    // now groups
+                    List<long> groupids;
+                    using (var db = new WWContext())
+                    {
+                        groupids = db.Groups.Select(x => x.GroupId).ToList();
+                    }
+                    var start = DateTime.Now;
+                    foreach (var g in groupids)
+                    {
+                        var index = groupids.IndexOf(g);
+                        Console.Clear();
+                        Console.WriteLine($"Working on group {groupids.IndexOf(g)} out of {groupids.Count}");
+                        if (index != 0)
+                        {
+                            var time = (DateTime.Now - start).Ticks;
+                            Console.WriteLine($"Time taken so far: {new TimeSpan(time)}");
+                            time /= index;
+                            time *= groupids.Count;
+                            Console.WriteLine($"Total time estimated: {new TimeSpan(time)}");
+                            time -= (DateTime.Now - start).Ticks;
+                            Console.WriteLine($"Estimated time remaining: {new TimeSpan(time)}");
+                        }
+                        GroupStats(g);
+                    }
+                    // players
+                    List<int> playerids;
+                    using (var db = new WWContext())
+                    {
+                        playerids = db.Players.Select(x => x.Id).ToList();
+                    }
+                    foreach (var p in playerids)
+                    {
+                        PlayerStats(p);
+                    }
                 }
                 catch
                 {
@@ -99,13 +96,13 @@ namespace StatsRotation
                     Console.WriteLine("Total games..");
                     var gamesPlayed = DB.Games.Count();
                     Console.WriteLine("Night 1 Death");
-                    var night1death = DB.GlobalNight1Death().First();
+                    var night1death = DB.GlobalNight1Death().FirstOrDefault(); // FirstOrDefault: procs return 0 rows when < 100 games exist
                     Console.WriteLine("Day 1 Lynch");
-                    var day1lynch = DB.GlobalDay1Lynch().First();
+                    var day1lynch = DB.GlobalDay1Lynch().FirstOrDefault();
                     Console.WriteLine("Day 1 Death");
-                    var day1death = DB.GlobalDay1Death().First();
+                    var day1death = DB.GlobalDay1Death().FirstOrDefault();
                     Console.WriteLine("Survivor");
-                    var survivor = DB.GlobalSurvivor().First();
+                    var survivor = DB.GlobalSurvivor().FirstOrDefault();
                     Console.WriteLine("Creating stat object");
                     var stat = DB.GlobalStats.FirstOrDefault();
                     if (stat == null)
@@ -118,20 +115,33 @@ namespace StatsRotation
                     stat.PlayersSurvived = DB.GamePlayers.Count(x => x.Survived);
                     stat.TotalGroups = DB.Groups.Count();
                     stat.TotalPlayers = DB.Players.Count();
-                    stat.BestSurvivor = survivor.Name;
-                    stat.BestSurvivorPercent = (int)survivor.pct;
-                    stat.BestSurvivorId = survivor.TelegramId;
                     stat.GamesPlayed = gamesPlayed;
                     stat.LastRun = DateTime.Now;
-                    stat.MostKilledFirstDay = day1death.Name;
-                    stat.MostKilledFirstDayPercent = day1death.pct;
-                    stat.MostKilledFirstDayId = day1death.TelegramId;
-                    stat.MostKilledFirstNight = night1death.Name;
-                    stat.MostKilledFirstPercent = night1death.pct;
-                    stat.MostKilledFirstNightId = night1death.TelegramId;
-                    stat.MostLynchedFirstDay = day1lynch.Name;
-                    stat.MostLynchedFirstPercent = day1lynch.pct;
-                    stat.MostLynchedFirstDayId = day1lynch.TelegramId;
+                    // only populate fields if procs returned data (need 100+ games in DB)
+                    if (survivor != null)
+                    {
+                        stat.BestSurvivor = survivor.Name;
+                        stat.BestSurvivorPercent = (int)(survivor.pct ?? 0); // pct is Nullable<decimal>, guard the cast
+                        stat.BestSurvivorId = survivor.TelegramId;
+                    }
+                    if (day1death != null)
+                    {
+                        stat.MostKilledFirstDay = day1death.Name;
+                        stat.MostKilledFirstDayPercent = day1death.pct;
+                        stat.MostKilledFirstDayId = day1death.TelegramId;
+                    }
+                    if (night1death != null)
+                    {
+                        stat.MostKilledFirstNight = night1death.Name;
+                        stat.MostKilledFirstPercent = night1death.pct;
+                        stat.MostKilledFirstNightId = night1death.TelegramId;
+                    }
+                    if (day1lynch != null)
+                    {
+                        stat.MostLynchedFirstDay = day1lynch.Name;
+                        stat.MostLynchedFirstPercent = day1lynch.pct;
+                        stat.MostLynchedFirstDayId = day1lynch.TelegramId;
+                    }
                     Console.WriteLine("Saving to database");
                     DB.SaveChanges();
                     Console.WriteLine("Done");
@@ -240,7 +250,43 @@ namespace StatsRotation
         {
             try
             {
+                using (var db = new WWContext())
+                {
+                    var player = db.Players.FirstOrDefault(x => x.Id == playerid);
+                    if (player == null) return;
 
+                    var gamesPlayed = player.GamePlayers.Count;
+                    if (gamesPlayed == 0) return;
+
+                    var stat = db.PlayerStats.FirstOrDefault(x => x.PlayerId == playerid);
+                    if (stat == null)
+                    {
+                        stat = new PlayerStat { PlayerId = playerid };
+                        db.PlayerStats.Add(stat);
+                    }
+
+                    stat.GamesPlayed = gamesPlayed;
+                    stat.GamesWon = player.GamePlayers.Count(x => x.Won);
+                    stat.GamesLost = gamesPlayed - stat.GamesWon;
+                    stat.GamesSurvived = player.GamePlayers.Count(x => x.Survived);
+
+                    var topRole = db.PlayerRoles(player.TelegramId)
+                        .OrderByDescending(x => x.times)
+                        .FirstOrDefault();
+                    stat.MostCommonRole = topRole?.role ?? "None";
+                    stat.MostCommonRolePercent = topRole?.times != null && gamesPlayed > 0
+                        ? (int)(topRole.times.Value * 100 / gamesPlayed)
+                        : 0;
+
+                    var mostKilled = db.PlayerMostKilled(player.TelegramId).FirstOrDefault();
+                    stat.MostKilled = mostKilled?.Name;
+
+                    var mostKilledBy = db.PlayerMostKilledBy(player.TelegramId).FirstOrDefault();
+                    stat.MostKilledBy = mostKilledBy?.Name;
+
+                    stat.LastRun = DateTime.Now;
+                    db.SaveChanges();
+                }
             }
             catch
             {

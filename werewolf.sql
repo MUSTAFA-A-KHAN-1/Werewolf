@@ -485,6 +485,35 @@ CREATE TABLE [dbo].[KillMethod](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
+-- Seed KillMethod rows — must match KillMthd enum in IPlayer.cs (0-indexed, None=0 skipped as it means no kill)
+SET IDENTITY_INSERT [dbo].[KillMethod] ON
+GO
+INSERT INTO [dbo].[KillMethod] ([Id], [Name]) VALUES (1,  'Lynch')
+INSERT INTO [dbo].[KillMethod] ([Id], [Name]) VALUES (2,  'Eat')
+INSERT INTO [dbo].[KillMethod] ([Id], [Name]) VALUES (3,  'Shoot')
+INSERT INTO [dbo].[KillMethod] ([Id], [Name]) VALUES (4,  'VisitWolf')
+INSERT INTO [dbo].[KillMethod] ([Id], [Name]) VALUES (5,  'VisitVictim')
+INSERT INTO [dbo].[KillMethod] ([Id], [Name]) VALUES (6,  'GuardWolf')
+INSERT INTO [dbo].[KillMethod] ([Id], [Name]) VALUES (7,  'Detected')
+INSERT INTO [dbo].[KillMethod] ([Id], [Name]) VALUES (8,  'Flee')
+INSERT INTO [dbo].[KillMethod] ([Id], [Name]) VALUES (9,  'Hunt')
+INSERT INTO [dbo].[KillMethod] ([Id], [Name]) VALUES (10, 'HunterShot')
+INSERT INTO [dbo].[KillMethod] ([Id], [Name]) VALUES (11, 'LoverDied')
+INSERT INTO [dbo].[KillMethod] ([Id], [Name]) VALUES (12, 'SerialKilled')
+INSERT INTO [dbo].[KillMethod] ([Id], [Name]) VALUES (13, 'HunterCult')
+INSERT INTO [dbo].[KillMethod] ([Id], [Name]) VALUES (14, 'GuardKiller')
+INSERT INTO [dbo].[KillMethod] ([Id], [Name]) VALUES (15, 'VisitKiller')
+INSERT INTO [dbo].[KillMethod] ([Id], [Name]) VALUES (16, 'Idle')
+INSERT INTO [dbo].[KillMethod] ([Id], [Name]) VALUES (17, 'Suicide')
+INSERT INTO [dbo].[KillMethod] ([Id], [Name]) VALUES (18, 'StealKiller')
+INSERT INTO [dbo].[KillMethod] ([Id], [Name]) VALUES (19, 'Chemistry')
+INSERT INTO [dbo].[KillMethod] ([Id], [Name]) VALUES (20, 'FallGrave')
+INSERT INTO [dbo].[KillMethod] ([Id], [Name]) VALUES (21, 'Spotted')
+INSERT INTO [dbo].[KillMethod] ([Id], [Name]) VALUES (22, 'Burn')
+INSERT INTO [dbo].[KillMethod] ([Id], [Name]) VALUES (23, 'VisitBurning')
+GO
+SET IDENTITY_INSERT [dbo].[KillMethod] OFF
+GO
 /****** Object:  Table [dbo].[LangPackGif]    Script Date: 26.03.2019 11:21:27 ******/
 SET ANSI_NULLS ON
 GO
@@ -833,6 +862,13 @@ REFERENCES [dbo].[KillMethod] ([Id])
 ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[GameKill] CHECK CONSTRAINT [FK_GameKill_KillMethod]
+GO
+-- Missing FK: VictimId had no FK constraint — victims could be orphaned silently
+-- Note: no ON DELETE CASCADE here because KillerId already cascades from Player; SQL Server disallows two cascade paths to the same table
+ALTER TABLE [dbo].[GameKill]  WITH CHECK ADD  CONSTRAINT [FK_GameKill_Victim] FOREIGN KEY([VictimId])
+REFERENCES [dbo].[Player] ([Id])
+GO
+ALTER TABLE [dbo].[GameKill] CHECK CONSTRAINT [FK_GameKill_Victim]
 GO
 ALTER TABLE [dbo].[GamePlayer]  WITH CHECK ADD  CONSTRAINT [FK_GamePlayer_Game] FOREIGN KEY([GameId])
 REFERENCES [dbo].[Game] ([Id])
