@@ -411,7 +411,9 @@ namespace Werewolf_Node
                     var selected = values.ElementAt(choice).Value;
 
                     //disable bluetexting /join!
-                    if (selected.ToLower().Contains("/join"))
+                    if (selected.ToLower().Contains("/join") &&
+                        key != "PlayerStartedGame" &&
+                        key != "PlayerStartedChaosGame")
                         throw new Exception("/join found in the string, using the English file.");
 
                     if (String.IsNullOrWhiteSpace(selected))
