@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -290,10 +289,10 @@ namespace Werewolf_Node
             try
             {
                 var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Languages", "language_start_gif_sets.json");
-                if (!File.Exists(path))
+                if (!System.IO.File.Exists(path))
                     return new Dictionary<string, LanguageStartGifSet>(StringComparer.InvariantCultureIgnoreCase);
 
-                var content = File.ReadAllText(path);
+                var content = System.IO.File.ReadAllText(path);
                 var parsed = JsonConvert.DeserializeObject<Dictionary<string, LanguageStartGifSet>>(content);
                 return parsed ?? new Dictionary<string, LanguageStartGifSet>(StringComparer.InvariantCultureIgnoreCase);
             }
