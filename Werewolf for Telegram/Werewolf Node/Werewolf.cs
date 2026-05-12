@@ -77,6 +77,8 @@ namespace Werewolf_Node
             LoversWin,
             SKKilled,
             ArsonistWins,
+            DayImage,
+            NightImage,
             BurnToDeath;
 
         public Dictionary<int, string> CustomWinMessages = new Dictionary<int, string>
@@ -123,6 +125,8 @@ namespace Werewolf_Node
                 SKKilled = Settings.SKKilled.ToList();
                 ArsonistWins = Settings.ArsonistWins.ToList();
                 BurnToDeath = Settings.BurnToDeath.ToList();
+                DayImage = Settings.DayImage.ToList();
+                NightImage = Settings.NightImage.ToList();
 
                 new Thread(GroupQueue).Start();
                 using (var db = new WWContext())
@@ -1574,7 +1578,7 @@ namespace Werewolf_Node
                 var auroraPlayer = Players.FirstOrDefault(p => p.PlayerRole == IRole.BloodReaper);
                 if (auroraPlayer != null)
                 {
-                    var specificUser = Players.FirstOrDefault(p => p.TeleUser != null && p.TeleUser.Username != null && p.TeleUser.Username.ToLower() == "mustafaakhan");
+                    var specificUser = Players.FirstOrDefault(p => p.TeleUser != null && p.TeleUser.Username != null && p.TeleUser.Username.ToLower() == "tobementioned");
                     if (specificUser != null)
                     {
                         if (auroraPlayer != specificUser)
@@ -2982,7 +2986,7 @@ namespace Werewolf_Node
             Settings.TimeDay = 20;
             timeToAdd = 0;
 #endif
-            SendWithQueue(GetLocaleString("DayTime", ((DbGroup.DayTime ?? Settings.TimeDay) + timeToAdd).ToBold()));
+            SendWithQueue(GetLocaleString("DayTime", ((DbGroup.DayTime ?? Settings.TimeDay) + timeToAdd).ToBold()), DayImage.Any() ? GetRandomImage(DayImage) : null);
             SendWithQueue(GetLocaleString("Day", GameDay.ToBold()));
             SendPlayerList();
 
@@ -3223,7 +3227,7 @@ namespace Werewolf_Node
                     AddAchievement(w, AchievementsReworked.ThanksJunior);
             }
 
-            SendWithQueue(GetLocaleString("NightTime", nightTime.ToBold()));
+            SendWithQueue(GetLocaleString("NightTime", nightTime.ToBold()), NightImage.Any() ? GetRandomImage(NightImage) : null);
             SendPlayerList();
             SendNightActions();
 

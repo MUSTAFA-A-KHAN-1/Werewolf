@@ -241,7 +241,7 @@ namespace Werewolf_Control
             game?.Kill();
         }
 
-        [Attributes.Command(Trigger = "adddummy", DevOnly = true, InGroupOnly = true)]
+        [Attributes.Command(Trigger = "adddummy", GroupAdminOnly = true, InGroupOnly = true)]
         public static void AddDummy(Update u, string[] args)
         {
 #if !DEBUG

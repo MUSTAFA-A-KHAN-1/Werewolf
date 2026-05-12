@@ -48,6 +48,8 @@ namespace Werewolf_Node
         internal static List<string> SKKilled = new List<string> { "CgACAgQAAxkBAAIu8WnwrnYs_8jYSvNRvOhMmqGEZAZ7AAJGCAAC0ytNUyWUBL0oCT0MOwQ" };
         public static List<string> ArsonistWins = new List<string> { "CgACAgQAAyEFAATkOdz5AAOeabc_gcqfnH36DkC1gk9m4cQWSgQAApQBAAIVoLVQ_3pxo5vu2Mw6BA" };
         public static List<string> BurnToDeath = new List<string> { "CgACAgQAAxkBAAFE6Blpt0F1OShQAtU997JtUr_lGJKkTAACqwADa589U-4JhzY72lIaOgQ" };
+        public static List<string> DayImage = new List<string> { "CgACAgQAAxkBAAFE6Blpt0F1OShQAtU997JtUr_lGJKkTAACqwADa589U-4JhzY72lIaOgQ"};
+        public static List<string> NightImage = new List<string> { "CgACAgQAAxkBAAFE6Blpt0F1OShQAtU997JtUr_lGJKkTAACqwADa589U-4JhzY72lIaOgQ"};
 
 #endif
         /* beta
