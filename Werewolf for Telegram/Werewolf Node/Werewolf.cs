@@ -62,6 +62,7 @@ namespace Werewolf_Node
         private DateTime lastGrave = DateTime.MinValue, secondLastGrave = DateTime.MinValue;
         private List<IRole> PossibleRoles;
         private const string GifPrefix = "https://tgwerewolf.com/gifs/";
+        private static readonly Lazy<Dictionary<string, LanguageStartGifSet>> LanguageStartGifSets = new Lazy<Dictionary<string, LanguageStartGifSet>>(LoadLanguageStartGifSets);
 
         public List<string> VillagerDieImages,
             WolfWin,
@@ -129,6 +130,7 @@ namespace Werewolf_Node
                     ChatGroup = chatGroup;
                     ChatId = chatid;
                     DbGroup = db.Groups.FirstOrDefault(x => x.GroupId == ChatId);
+                    var hasCustomStartGifs = false;
 
                     if (DbGroup == null)
                     {
@@ -161,11 +163,13 @@ namespace Werewolf_Node
                                 {
                                     StartChaosGame.Clear();
                                     StartChaosGame.Add(gifset.StartChaosGame);
+                                    hasCustomStartGifs = true;
                                 }
                                 if (gifset.StartGame != null)
                                 {
                                     StartGame.Clear();
                                     StartGame.Add(gifset.StartGame);
+                                    hasCustomStartGifs = true;
                                 }
                             }
                         }
@@ -214,6 +218,13 @@ namespace Werewolf_Node
 
 
                     LoadLanguage(DbGroup.Language, DbGroup.HasFlag(GroupConfig.RandomLangVariant));
+                    if (!hasCustomStartGifs && LanguageStartGifSets.Value.TryGetValue(Language, out var languageGifSet))
+                    {
+                        if (languageGifSet.StartGame?.Any() == true)
+                            StartGame = languageGifSet.StartGame.ToList();
+                        if (languageGifSet.StartChaosGame?.Any() == true)
+                            StartChaosGame = languageGifSet.StartChaosGame.ToList();
+                    }
 
                     _requestPMButton = new InlineKeyboardMarkup(new[] { InlineKeyboardButton.WithUrl("Start Me", "http://t.me/" + Program.Me.Username) });
                     //AddPlayer(u);
@@ -271,6 +282,30 @@ namespace Werewolf_Node
                 Program.RemoveGame(this);
             }
 
+        }
+
+        private static Dictionary<string, LanguageStartGifSet> LoadLanguageStartGifSets()
+        {
+            try
+            {
+                var path = System.IO.Path.Combine(Program.LanguageDirectory, "language_start_gif_sets.json");
+                if (!System.IO.File.Exists(path))
+                    return new Dictionary<string, LanguageStartGifSet>(StringComparer.InvariantCultureIgnoreCase);
+
+                var content = System.IO.File.ReadAllText(path);
+                var parsed = JsonConvert.DeserializeObject<Dictionary<string, LanguageStartGifSet>>(content);
+                return parsed ?? new Dictionary<string, LanguageStartGifSet>(StringComparer.InvariantCultureIgnoreCase);
+            }
+            catch
+            {
+                return new Dictionary<string, LanguageStartGifSet>(StringComparer.InvariantCultureIgnoreCase);
+            }
+        }
+
+        private class LanguageStartGifSet
+        {
+            public List<string> StartGame { get; set; }
+            public List<string> StartChaosGame { get; set; }
         }
 
 
@@ -376,7 +411,9 @@ namespace Werewolf_Node
                     var selected = values.ElementAt(choice).Value;
 
                     //disable bluetexting /join!
-                    if (selected.ToLower().Contains("/join"))
+                    if (selected.ToLower().Contains("/join") &&
+                        key != "PlayerStartedGame" &&
+                        key != "PlayerStartedChaosGame")
                         throw new Exception("/join found in the string, using the English file.");
 
                     if (String.IsNullOrWhiteSpace(selected))
