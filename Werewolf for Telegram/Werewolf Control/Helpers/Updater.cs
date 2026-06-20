@@ -84,11 +84,11 @@ namespace Werewolf_Control.Helpers
 
                 Bot.ReplyToCallback(query, msg);
                 //directories
-                var uDir = "/build/"; // Use a linux compatible path if needed, or environment variable
+                var uDir = Environment.GetEnvironmentVariable("WEREWOLF_UPDATE_DIR") ?? "/build/";
                 var controlDir = Path.Combine(uDir, "Werewolf Control", "bin");
                 var nodeDir = Path.Combine(uDir, "Werewolf Node", "bin");
 
-                var botBaseDir = "c:\\BOT\\Werewolf 4.0 ";
+                var botBaseDir = "/BOT/Werewolf 4.0 ";
 
 
                 //files

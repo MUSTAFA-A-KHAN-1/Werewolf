@@ -26,7 +26,7 @@ using File = System.IO.File;
 using Group = Database.Group;
 using RegHelper = Werewolf_Control.Helpers.RegHelper;
 using System.Collections;
-using System.Drawing;
+
 using Telegram.Bot;
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
@@ -621,11 +621,7 @@ namespace Werewolf_Control
             var cpu = "N/A";
             var cpuTimes = new List<int>();
 
-            for (var i = 0; i < 10; i++)
-            {
-                Thread.Sleep(500);
-                cpuTimes.Add(0);
-            }
+            cpuTimes.Add(0);
 
             var cpuAvg = (int)cpuTimes.Average();
 
@@ -1428,7 +1424,7 @@ namespace Werewolf_Control
         [Attributes.Command(Trigger = "clearlogs", DevOnly = true)]
         public static void ClearLogs(Update u, string[] args)
         {
-            var LogPath = Path.Combine(Bot.RootDirectory, "..\\Logs\\");
+            var LogPath = Path.Combine(Bot.RootDirectory, "..", "Logs") + Path.DirectorySeparatorChar;
             var files = new[] { "NodeFatalError.log", "error.log", "tcperror.log", "apireceiveerror.log", "getUpdates.log" };
             foreach (var file in files)
             {
@@ -1456,7 +1452,7 @@ namespace Werewolf_Control
         {
             try
             {
-                var LogPath = Path.Combine(Bot.RootDirectory, "..\\Logs\\");
+                var LogPath = Path.Combine(Bot.RootDirectory, "..", "Logs") + Path.DirectorySeparatorChar;
 
                 var path = LogPath + "errors.zip";
                 if (System.IO.File.Exists(path))
