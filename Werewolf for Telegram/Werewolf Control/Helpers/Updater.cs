@@ -84,9 +84,9 @@ namespace Werewolf_Control.Helpers
 
                 Bot.ReplyToCallback(query, msg);
                 //directories
-                var uDir = "c:\\build\\";
-                var controlDir = uDir + "Werewolf Control\\bin\\";
-                var nodeDir = uDir + "Werewolf Node\\bin\\";
+                var uDir = "/build/"; // Use a linux compatible path if needed, or environment variable
+                var controlDir = Path.Combine(uDir, "Werewolf Control", "bin");
+                var nodeDir = Path.Combine(uDir, "Werewolf Node", "bin");
 
                 var botBaseDir = "c:\\BOT\\Werewolf 4.0 ";
 
@@ -117,7 +117,7 @@ namespace Werewolf_Control.Helpers
                             )
                         {
                             var fName = Path.GetFileName(file);
-                            System.IO.File.Copy(file, botBaseDir + b.BotDirSuffix + "\\Control\\Update\\" + fName, true);
+                            System.IO.File.Copy(file, Path.Combine(botBaseDir, b.BotDirSuffix, "Control", "Update", fName), true);
                         }
                         msg += $"\nCopied {b.BuildName} Control files";
                         Bot.ReplyToCallback(query, msg);
