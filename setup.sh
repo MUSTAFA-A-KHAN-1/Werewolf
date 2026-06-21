@@ -101,6 +101,13 @@ WEREWOLF_OPENAI_API_KEY=$OPENAI_TOKEN
 WEREWOLF_DB_CONNECTION_STRING='metadata=res://*/Database.WerewolfModel.csdl|res://*/Database.WerewolfModel.ssdl|res://*/Database.WerewolfModel.msl;provider=System.Data.SqlClient;provider connection string="data source=localhost,1433;initial catalog=werewolf;user id=SA;password=Werewolf@12345;Encrypt=False;TrustServerCertificate=True;MultipleActiveResultSets=True;App=EntityFramework"'
 EOF
 
+echo ""
+echo "Restoring packages..."
+
+dotnet restore \
+  "Werewolf for Telegram/WerewolfForTelegram.sln" \
+  -r linux-x64
+
 set -a
 source .env
 set +a
