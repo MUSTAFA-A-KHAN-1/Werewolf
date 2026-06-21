@@ -2554,7 +2554,7 @@ USE [master]
 GO
 ALTER DATABASE [werewolf] SET  READ_WRITE 
 GO
-INSERT INTO db_owner.BotStatus (BotStatus, BotName, BotLink) VALUES('Down', 'Name', 'Link')
-INSERT INTO db_owner.BotStatus (BotStatus, BotName, BotLink) VALUES('Down', 'Name', 'Link')
-INSERT INTO db_owner.BotStatus (BotStatus, BotName, BotLink) VALUES('Down', 'Name', 'Link')
-INSERT INTO db_owner.BotStatus (BotStatus, BotName, BotLink) VALUES('Down', 'Name', 'Link')
+INSERT INTO dbo.BotStatus (BotStatus, BotName, BotLink) VALUES('Down', 'Name', 'Link')
+INSERT INTO dbo.BotStatus (BotStatus, BotName, BotLink) VALUES('Down', 'Name', 'Link')
+INSERT INTO dbo.BotStatus (BotStatus, BotName, BotLink) VALUES('Down', 'Name', 'Link')
+INSERT INTO dbo.BotStatus (BotStatus, BotName, BotLink) VALUES('Down', 'Name', 'Link')
