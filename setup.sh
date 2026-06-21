@@ -104,11 +104,20 @@ EOF
 source .env
 
 echo ""
-echo "Building solution..."
+echo "Publishing solution..."
 
-dotnet build \
-  "Werewolf for Telegram/WerewolfForTelegram.sln" \
-  -c "$BUILD_CONFIG"
+dotnet publish \
+  "Werewolf for Telegram/Werewolf Control/WerewolfControl.csproj" \
+  -c "$BUILD_CONFIG" \
+  -r linux-x64 \
+  --self-contained true
+
+dotnet publish \
+  "Werewolf for Telegram/Werewolf Node/WerewolfNode.csproj" \
+  -c "$BUILD_CONFIG" \
+  -r linux-x64 \
+  --self-contained true \
+  --no-restore
 
 echo ""
 echo "Preparing deployment..."
@@ -120,12 +129,15 @@ mkdir -p "$ROOT_DIR/Node 1"
 mkdir -p "$ROOT_DIR/Logs"
 mkdir -p "$ROOT_DIR/Languages"
 
+rm -rf "$ROOT_DIR/Control"/*
+rm -rf "$ROOT_DIR/Node 1"/*
+
 cp -r \
-  "Werewolf for Telegram/Werewolf Control/bin/$BUILD_CONFIG/net8.0/." \
+  "Werewolf for Telegram/Werewolf Control/bin/$BUILD_CONFIG/net8.0/linux-x64/publish/." \
   "$ROOT_DIR/Control/"
 
 cp -r \
-  "Werewolf for Telegram/Werewolf Node/bin/$BUILD_CONFIG/net8.0/." \
+  "Werewolf for Telegram/Werewolf Node/bin/$BUILD_CONFIG/net8.0/linux-x64/publish/." \
   "$ROOT_DIR/Node 1/"
 
 cp -r \
@@ -148,6 +160,22 @@ echo "Starting Node..."
     cd "$ROOT_DIR/Node 1"
     nohup ./WerewolfNode > node.log 2>&1 &
 )
+
+sleep 5
+
+if ! pgrep -f WerewolfControl >/dev/null; then
+    echo ""
+    echo "WerewolfControl failed to start."
+    tail -50 "$ROOT_DIR/Control/control.log"
+    exit 1
+fi
+
+if ! pgrep -f WerewolfNode >/dev/null; then
+    echo ""
+    echo "WerewolfNode failed to start."
+    tail -50 "$ROOT_DIR/Node 1/node.log"
+    exit 1
+fi
 
 echo ""
 echo "Setup complete."
