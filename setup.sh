@@ -101,7 +101,9 @@ WEREWOLF_OPENAI_API_KEY=$OPENAI_TOKEN
 WEREWOLF_DB_CONNECTION_STRING='metadata=res://*/Database.WerewolfModel.csdl|res://*/Database.WerewolfModel.ssdl|res://*/Database.WerewolfModel.msl;provider=System.Data.SqlClient;provider connection string="data source=localhost,1433;initial catalog=werewolf;user id=SA;password=Werewolf@12345;Encrypt=False;TrustServerCertificate=True;MultipleActiveResultSets=True;App=EntityFramework"'
 EOF
 
+set -a
 source .env
+set +a
 
 echo ""
 echo "Publishing solution..."
