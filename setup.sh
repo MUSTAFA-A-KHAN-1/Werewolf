@@ -98,7 +98,7 @@ cat > .env <<EOF
 $API_VAR=$API_TOKEN
 WEREWOLF_BOT_API_TOKEN=$API_TOKEN
 WEREWOLF_OPENAI_API_KEY=$OPENAI_TOKEN
-WEREWOLF_DB_CONNECTION_STRING=metadata=res://*/Database.WerewolfModel.csdl|res://*/Database.WerewolfModel.ssdl|res://*/Database.WerewolfModel.msl;provider=System.Data.SqlClient;provider connection string="data source=localhost,1433;initial catalog=werewolf;user id=SA;password=Werewolf@12345;Encrypt=False;TrustServerCertificate=True;MultipleActiveResultSets=True;App=EntityFramework"
+WEREWOLF_DB_CONNECTION_STRING='metadata=res://*/Database.WerewolfModel.csdl|res://*/Database.WerewolfModel.ssdl|res://*/Database.WerewolfModel.msl;provider=System.Data.SqlClient;provider connection string="data source=localhost,1433;initial catalog=werewolf;user id=SA;password=Werewolf@12345;Encrypt=False;TrustServerCertificate=True;MultipleActiveResultSets=True;App=EntityFramework"'
 EOF
 
 source .env
