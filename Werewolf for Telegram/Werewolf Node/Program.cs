@@ -51,15 +51,15 @@ namespace Werewolf_Node
         {
             get
             {
-                var dir1 = Path.GetFullPath(Path.Combine(RootDirectory, @"..\..\..\Languages"));
+                var dir1 = Path.GetFullPath(Path.Combine(RootDirectory, "..", "..", "..", "Languages"));
                 if (Directory.Exists(dir1)) return dir1;
-                var dir2 = Path.GetFullPath(Path.Combine(RootDirectory, @"..\Languages"));
+                var dir2 = Path.GetFullPath(Path.Combine(RootDirectory, "..", "Languages"));
                 if (Directory.Exists(dir2)) return dir2;
-                return Path.GetFullPath(Path.Combine(RootDirectory, @"..\..\Languages"));
+                return Path.GetFullPath(Path.Combine(RootDirectory, "..", "..", "Languages"));
             }
         }
 
-        internal static string TempLanguageDirectory => Path.GetFullPath(Path.Combine(RootDirectory, @"..\..\TempLanguageFiles"));
+        internal static string TempLanguageDirectory => Path.GetFullPath(Path.Combine(RootDirectory, "..", "..", "TempLanguageFiles"));
         internal static Dictionary<string, LangFile> Languages { get; } = new Dictionary<string, LangFile>();
         internal static XDocument English;
         internal const string MasterLanguage = "English.xml";
@@ -72,7 +72,7 @@ namespace Werewolf_Node
             AppDomain.CurrentDomain.UnhandledException += (sender, eventArgs) =>
             {
                 var ex = eventArgs.ExceptionObject as Exception;
-                using (var sw = new StreamWriter(Path.Combine(RootDirectory, "..\\Logs\\NodeFatalError.log"), true))
+                using (var sw = new StreamWriter(Path.Combine(RootDirectory, "..", "Logs", "NodeFatalError.log"), true))
                 {
 
                     sw.WriteLine($"{DateTime.Now} - {Version} - {ex.Message}");
