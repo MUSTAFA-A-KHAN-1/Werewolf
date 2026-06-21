@@ -123,7 +123,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [db_owner].[ContestTerms](
-	[TelegramId] [int] NOT NULL,
+	[TelegramId] [bigint] NOT NULL,
 	[AgreedTerms] [bit] NOT NULL,
  CONSTRAINT [PK_ContestTerms] PRIMARY KEY CLUSTERED 
 (
@@ -565,7 +565,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[Player](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
-	[TelegramId] [int] NOT NULL,
+	[TelegramId] [bigint] NOT NULL,
 	[Name] [nvarchar](max) NOT NULL,
 	[UserName] [nvarchar](max) NULL,
 	[Banned] [bit] NULL,
